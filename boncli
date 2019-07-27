@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=3
+readonly BONCLI_VERSION=4
 readonly GIT_URL='https://github.com/grufwub/boncli'
 
 # Global variables (set in function setup_env)
@@ -66,18 +66,6 @@ function setup_env()
 	BONCLAY_EXEC="$BINS_DIR/bonclay"
 	CONF_FILE="$SYNC_DIR/bonclay.conf.yaml"
 	FILE_PICKER="$BINS_DIR/file_picker.py"
-}
-
-function download_tool()
-{
-	if (curl --version > /dev/null 2>&1) ; then
-		printf 'curl -fL'
-	elif (wget --version > /dev/null 2>&1) ; then
-		printf 'wget'
-	else
-		printf 'please ensure that one of wget or curl are installed in order to download boncli required binaries, exiting...\n'
-		exit 1
-	fi
 }
 
 function download()
