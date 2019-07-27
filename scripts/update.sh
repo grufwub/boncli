@@ -10,13 +10,13 @@ if [[ $BONCLI_PATH == '' ]] ; then
 	exit 1
 fi
 
-download="curl -fLo $BONCLI_PATH $BONCLI_URL"
+download="curl -fLo $BONCLI_PATH $BONCLI_URL --silent"
 if [[ -w $BONCLI_PATH ]] ; then
 	# path is writeable, sudo not required
-	$download #> /dev/null 2>&1
+	$download
 else
 	# write permissions for current user not available, trying sudo
-	sudo $download #> /dev/null 2>&1
+	sudo $download
 fi
 
 if [[ $? -ne 0 ]] ; then
