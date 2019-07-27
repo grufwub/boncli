@@ -173,7 +173,7 @@ function get_latest_yq()
 function get_latest_file_picker()
 {
 	printf 'downloading latest curses file-picker...\n'
-	download "$FILE_PICKER" 'https://raw.githubusercontent.com/grufwub/boncli/master/scripts/file_picker.py'
+	download "$FILE_PICKER" "$GIT_URL/raw/master/scripts/file_picker.py"
 }
 
 function update_binaries()
