@@ -1,6 +1,6 @@
 # boncli
 
-A user friendly dotfile manager. Providing a wrapper script around existing tools written in go, bundled with a friendly curses-based file picker written in python.
+A user friendly dotfile manager designed for Pengwin WSL (https://github.com/whitewaterfoundry/Pengwin) users, but usable on any 64-bit Linux / MacOS systems. Providing a wrapper script around existing tools written in go, bundled with a friendly curses-based file picker written in python.
 
 
 To install execute the following, though /usr/local/bin can be replaced with any directory in path should you wish:
