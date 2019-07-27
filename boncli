@@ -1,0 +1,353 @@
+#!/bin/bash
+
+readonly BONCLI_VERSION=1
+readonly GIT_URL='https://github.com/grufwub/boncli'
+
+# Global variables (set in function setup_env)
+declare BONCLI_ROOT
+declare SYNC_ROOT
+declare YQ_EXEC
+declare BONCLAY_EXEC
+declare FILE_PICKER
+declare CONF_FILE
+
+function usage()
+{
+	printf 'PLEASE NOTE: you are running bonclay via a wrapper script.
+The bonclay executable is actually located at: %s
+If you are having any issues please contact grufwub directly at: https://github.com/grufwub/boncli/issues\n
+%s
+  config       Open the default configuration file with EDITOR
+  manage       Open the CLI file-picker interface to manage your synced files\n' "$BONCLAY_EXEC" "$($BONCLAY_EXEC --help)"
+}
+
+function file_picker()
+{
+	local args file_contents current_files tmp_file file_results other_confs next_conf
+
+	current_files=$("$YQ_EXEC" r "$CONF_FILE" 'spec' | sed -e 's|:.*$||g' -e "s|~|$HOME|g" | tr '\n' ':' | sed -e 's|:$||g')
+
+	# Launch file picker with correct arguments with pre-selected file list if existent
+	tmp_file=$(mktemp)
+	if [[ "$current_files" != 'null' ]] ; then
+		python3 "$FILE_PICKER" --start-dir "$HOME" --lowest-dir "$HOME" --output "$tmp_file" --pre-selected "$current_files"
+	else
+		python3 "$FILE_PICKER" --start-dir "$HOME" --lowest-dir "$HOME" --output "$tmp_file"
+	fi
+
+	# Receive selected files from results file then remove
+	file_results=$(cat "$tmp_file")
+	rm -f "$tmp_file"
+
+	# Keep copy of other config settings in memory, then add synced files to this config if found
+	other_confs=$("$YQ_EXEC" d "$CONF_FILE" 'spec')
+	next_conf=$other_confs
+	for path in $file_results ; do
+		formatted_entry=$(echo "$path" | sed -e "s|^$HOME/||g")
+		formatted_path="~/$formatted_entry"
+		next_conf=$(echo "$next_conf" | "$YQ_EXEC" w - "spec.[$formatted_path]" "$SYNC_DIR/$formatted_entry")
+	done
+
+	# Write current state of config in memory to bonclay configuration file
+	printf '%s\n' "$next_conf" > "$CONF_FILE"
+}
+
+function setup_env()
+{
+	if [ -z $BONCLI_ROOT ] ; then
+		# Bonclay directory not set, using default
+		BONCLI_ROOT="$HOME/.boncli"
+	fi
+
+	SYNC_DIR="$BONCLI_ROOT/sync"
+	BINS_DIR="$BONCLI_ROOT/bin"
+	YQ_EXEC="$BINS_DIR/yq"
+	BONCLAY_EXEC="$BINS_DIR/bonclay"
+	CONF_FILE="$SYNC_DIR/bonclay.conf.yaml"
+	FILE_PICKER="$BINS_DIR/file_picker.py"
+}
+
+function download_tool()
+{
+	if (curl --version > /dev/null 2>&1) ; then
+		printf 'curl -fL'
+	elif (wget --version > /dev/null 2>&1) ; then
+		printf 'wget'
+	else
+		printf 'please ensure that one of wget or curl are installed in order to download boncli required binaries, exiting...\n'
+		exit 1
+	fi
+}
+
+function download()
+{
+	local result
+
+	# download!
+	curl -fLo "$1" "$2" > /dev/null 2>&1
+
+	result=$?
+	if [ $result -ne 0 ] ; then printf 'download failed!\n' ; fi
+
+	return $result
+}
+
+# https://gist.github.com/lukechilds/a83e1d7127b78fef38c2914c4ececc3c
+function get_latest_release {
+	curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
+		grep '"tag_name":' |                                          # Get tag line
+		sed -E 's/.*"([^"]+)".*/\1/'                                  # Pluck JSON value
+}
+
+function get_latest_bonclay()
+{
+	local release url tmpdir
+
+	release=$(get_latest_release 'talal/bonclay' | sed -e 's|^v||')
+	url="https://github.com/talal/bonclay/releases/download/v$release"
+
+	tmpdir=$(mktemp -d)
+	cd "$tmpdir"
+
+	printf 'downloading latest bonclay (%s)...\n' "v$release"
+	case "$(uname -sm)" in
+		Darwin\ *64)
+			download 'bonclay.tar.gz' "$url/bonclay-$release-darwin_amd64.tar.gz"
+			;;
+		Linux\ *64)
+			download 'bonclay.tar.gz' "$url/bonclay-$release-linux_amd64.tar.gz"
+			;;
+		*)
+			printf "no compatible 'bonclay' binary available for your system, exiting...\n"
+			exit 1
+			;;
+	esac
+
+	result=$?
+	if [ $result -eq 0 ] ; then
+		tar -xf 'bonclay.tar.gz'
+		mv 'bonclay' "$BONCLAY_EXEC"
+		chmod +x "$BONCLAY_EXEC"
+		cd - > /dev/null 2>&1
+	fi
+	rm -rf "$tmpdir"
+
+	return $result
+}
+
+function get_latest_yq()
+{
+	local release url tmpdir result
+
+	release=$(get_latest_release 'mikefarah/yq')
+	url="https://github.com/mikefarah/yq/releases/download/$release"
+
+	tmpdir=$(mktemp -d)
+	cd "$tmpdir"
+
+	printf 'downloading latest yq (%s)...\n' "$release"
+	case "$(uname -sm)" in
+		Darwin\ *64)
+			download 'yq' "$url/yq_darwin_amd64"
+			;;
+		Linux\ *64)
+			download 'yq' "$url/yq_linux_amd64"
+			;;
+		*)
+			printf "no compatible 'yq' binary available for your system, exiting...\n"
+			exit 1
+			;;
+	esac
+
+	result=$?
+	if [ $result -eq 0 ] ; then
+		mv 'yq' "$YQ_EXEC"
+		chmod +x "$YQ_EXEC"
+		cd - > /dev/null 2>&1
+	fi
+	rm -rf "$tmpdir"
+
+	return $result
+}
+
+function get_latest_file_picker()
+{
+	printf 'downloading latest curses file-picker...\n'
+	download "$FILE_PICKER" 'https://raw.githubusercontent.com/grufwub/boncli/master/scripts/file_picker.py'
+}
+
+function update_binaries()
+{
+	local yq_local yq_remote bonclay_local bonclay_remote
+
+	# compare yq local / remote version strings to see if update required
+	yq_local=$("$YQ_EXEC" --version | sed -e 's|^[^0-9]*||')
+	yq_remote=$(get_latest_release 'mikefarah/yq')
+	if [[ $yq_local != $yq_remote ]] ; then
+		printf 'yq binary update found!\nlocal:%s remote:%s\n' "$yq_local" "$yq_remote"
+		get_latest_yq
+	else
+		printf 'yq binary up-to-date!\n'
+	fi
+
+	# compare bonclay local / remote version strings to see if update required
+	bonclay_local=$("$BONCLAY_EXEC" --version | sed -e 's|^[^0-9]*||')
+	bonclay_remote=$(get_latest_release 'talal/bonclay' | sed -e 's|^v||')
+	if [[ $bonclay_local != $bonclay_remote ]] ; then
+		printf 'bonclay binary update found!\nlocal:%s remote:%s\n' "$bonclay_local" "$bonclay_remote"
+		get_latest_bonclay
+	else
+		printf 'bonclay binary up-to-date!\n'
+	fi
+}
+
+function update_boncli()
+{
+	local boncli_remote
+
+	# compare local boncli version to remote, execute update script if version difference
+	boncli_remote=$(curl -fL "$GIT_URL/raw/master/boncli" > /dev/null 2>&1)
+	if [[ $? -ne 0 ]] ; then
+		printf 'error reading boncli version from repository!\n'
+		exit 1
+	fi
+
+	boncli_remote=$(printf "$boncli_remote" | grep -e '^readonly BONCLI_VERSION=' | sed 's|^readonly BONCLI_VERSION=||')
+	if [[ $boncli_remote -gt $BONCLI_VERSION ]] ; then
+		printf 'boncli update found! downloading and executing update script...'
+		curl -fL "$GIT_URL/raw/master/scripts/update.sh" | bash > /dev/null 2>&1
+
+		if [[ $? -ne 0 ]] ; then
+			printf 'error downloading boncli update script!\n'
+			exit 1
+		else
+			printf '\nboncli updated successfully!\nplease re-run `boncli update` to check for any bonclay / yq binary updates\n'
+			exit 0
+		fi
+	fi
+}
+
+function initial_checks()
+{
+	# check running as bash
+	if (echo $SHELL | grep -q -e '/bin/bash$' > /dev/null 2>&1) ; then
+		echo 'boncli must be executed with bash, exiting...'
+		exit 1
+	fi
+
+	# ensure that boncli directory exists
+	if [[ ! -d $BONCLI_ROOT ]] ; then
+		printf 'boncli root directory does not exist, creating: %s\n' "$BONCLI_ROOT"
+		mkdir -p "$BONCLI_ROOT"
+	fi
+
+	# ensure that boncli bins directory exists
+	if [[ ! -d $BINS_DIR ]] ; then
+		mkdir -p "$BINS_DIR"
+	fi
+
+	# ensure that boncli sync directory exists
+	if [[ ! -d $SYNC_DIR ]] ; then
+		mkdir -p "$SYNC_DIR"
+	fi
+
+	# check boncli directory permissions
+	printf 'TODO: check file permissions\n'
+
+	# check that curl installed
+	if ! (curl --version > /dev/null 2>&1) ; then
+		printf 'boncli will not function without curl to install binaries and update itself, exiting...\n'
+		exit 1
+	fi
+
+	# check that bonclay bin exists
+	if ! ("$BONCLAY_EXEC" --version > /dev/null 2>&1) ; then
+		get_latest_bonclay
+		if [ $? -ne 0 ] ; then exit 1 ; fi
+	fi
+
+	# check that yq bin exists
+	if ! ("$YQ_EXEC" --version > /dev/null 2>&1) ; then
+		get_latest_yq
+		if [ $? -ne 0 ] ; then exit 1 ; fi
+	fi
+
+	# ensure user has python3 installed
+	if ! (python3 --version > /dev/null 2>&1) ; then
+		printf 'boncli requires that python3 be installed for the curses file-picker, exiting...\n'
+		exit 1
+	fi
+
+	# check user has file picker script installed
+	if [[ ! -f "$FILE_PICKER" ]] ; then
+		get_latest_file_picker
+		#if [ $? -ne 0 ] ; then exit 1 ; fi
+	fi
+
+	# initialize configuration file if not already
+	if [[ ! -f $CONF_FILE ]] ; then
+		cd "$SYNC_DIR"
+		"$BONCLAY_EXEC" init
+		cd - > /dev/null 2>&1
+	fi
+}
+
+function main()
+{
+	# User has supplied their own conf file, run bonclay as if without wrapper
+	if [[ "$2" == *".yaml.conf"* ]] ; then
+		"$BONCLAY_EXEC" $@
+	fi
+
+	# Handle arguments
+	case "$1" in
+		'init'|'--version')
+			# Launch bonclay without automatically included conf file
+			"$BONCLAY_EXEC" $@
+			exit $?
+			;;
+
+		'--help'|'')
+			# Display bonclay help information with our own wrapper-specific information
+			usage
+			exit $?
+			;;
+
+		'backup'|'restore'|'sync')
+			# Execute bonclay with supplied command and automatically include config file
+			"$BONCLAY_EXEC" "$1" "$CONF_FILE"
+			exit $?
+			;;
+
+		'config')
+			# Provide short-cut to let user modify config file with their environmnetally set EDITOR
+			"$EDITOR" "$CONF_FILE"
+			exit $?
+			;;
+
+		'manage')
+			# Launch the user-friendly Python3 filechecker to select / deselect synchronized files
+			file_picker
+			exit $?
+			;;
+
+		'update')
+			update_boncli
+			update_binaries
+			;;
+		'version')
+			printf 'boncli version %s\n' "$BONCLI_VERSION"
+			exit 0
+			;;
+		*)
+			# All else shouldn't be accepted commands, just pass to bonclay as-is
+			"$BONCLAY_EXEC" $@
+			exit $?
+			;;
+	esac
+}
+
+setup_env
+initial_checks
+main "$@"
+exit 0
