@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=4
+readonly BONCLI_VERSION=5
 readonly GIT_URL='https://github.com/grufwub/boncli'
 
 # Global variables (set in function setup_env)
@@ -204,7 +204,7 @@ function update_boncli()
 	boncli_remote=$(printf "$boncli_remote" | grep -e '^readonly BONCLI_VERSION=' | sed 's|^readonly BONCLI_VERSION=||')
 	if [[ $boncli_remote -gt $BONCLI_VERSION ]] ; then
 		printf 'boncli update found! downloading and executing update script...'
-		curl -fL "$GIT_URL/raw/master/scripts/update.sh" | bash > /dev/null 2>&1
+		curl -fL "$GIT_URL/raw/master/scripts/update.sh" --silent | bash
 
 		if [[ $? -ne 0 ]] ; then
 			printf 'error downloading boncli update script!\n'
