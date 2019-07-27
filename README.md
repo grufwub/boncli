@@ -5,7 +5,7 @@ A user friendly dotfile manager. Providing a wrapper script around existing tool
 
 To install execute the following, though /usr/local/bin can be replaced with any directory in path should you wish:
 
-`curl -fLo /usr/local/bin/boncli 'https://github.com/grufwub/boncli/raw/master/boncli'`
+`curl -fLo /usr/local/bin/boncli 'https://github.com/grufwub/boncli/raw/master/boncli' && chmod +x /usr/local/bin/boncli`
 
 
 By default boncli installs the required binaries and sync directory to `$HOME/.boncli`, with binaries under `$BONCLI_ROOT/bin` and user synced files under `$BONCLI_ROOT/sync`. You can change this directory simply by setting the `BONCLI_ROOT` environment variable in your shell.
