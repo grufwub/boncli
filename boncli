@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=1
+readonly BONCLI_VERSION=2
 readonly GIT_URL='https://github.com/grufwub/boncli'
 
 # Global variables (set in function setup_env)
@@ -232,7 +232,7 @@ function update_boncli()
 function initial_checks()
 {
 	# check running as bash
-	if (echo $SHELL | grep -q -e '/bin/bash$' > /dev/null 2>&1) ; then
+	if [[ $BASH_VERSION == '' ]] ; then
 		echo 'boncli must be executed with bash, exiting...'
 		exit 1
 	fi
