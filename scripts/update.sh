@@ -1,1 +1,28 @@
-printf 'no update available!\n'
+#!/bin/bash
+
+readonly BONCLI_URL='https://github.com/grufwub/boncli/raw/master/boncli'
+
+printf 'updating boncli!\n'
+
+BONCLI_PATH=$(which boncli)
+if [[ $BONCLI_PATH == '' ]] ; then
+	printf '\nexisting boncli not found, exiting...\n'
+	exit 1
+fi
+
+download="curl -fLo $BONCLI_PATH $BONCLI_URL"
+if [[ -w $BONCLI_PATH ]] ; then
+	# path is writeable, sudo not required
+	$download #> /dev/null 2>&1
+else
+	# write permissions for current user not available, trying sudo
+	sudo $download #> /dev/null 2>&1
+fi
+
+if [[ $? -ne 0 ]] ; then
+	printf 'download failed -- boncli failed to update!\n'
+	exit 1
+else
+	printf 'boncli updated successfully!\n'
+	exit 0
+fi
