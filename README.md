@@ -14,7 +14,7 @@ To install execute the following, though /usr/local/bin can be replaced with any
 By default boncli installs the required binaries and sync directory to `$HOME/.boncli`, with binaries under `$BONCLI_ROOT/bin` and user synced files under `$BONCLI_ROOT/sync`. You can change this directory simply by setting the `BONCLI_ROOT` environment variable in your shell.
 
 
-Based on the hardwork by: 
+Based on the hardwork by:
 
 - talal, the author of **bonclay**, a simple dotfile manager written in go (https://github.com/talal/bonclay)
 
@@ -24,3 +24,10 @@ Based on the hardwork by:
 Roadmap:
 
 - replace the Python file picker with the planned version re-written in C
+
+- flesh out this README further!
+
+
+Troubleshooting:
+
+- if you use pyenv to manage your python installations, you might run into a '_curses' module not found error. if this is the case, then you need to install the ncurses developer package for you distribution, uninstall that version of python3 through pyenv, then reinstall it so that it can build python3 with the appropriate ncurses modules. if this still doesn't work, then installing python3 through your distribution's package management system should fix it
