@@ -16,3 +16,8 @@ Based on the hardwork by:
 - talal, the author of **bonclay**, a simple dotfile manager written in go (https://github.com/talal/bonclay)
 
 - mikefarah, the author of **yq**, a portable command-line YAML processor written in go (https://github.com/mikefarah/yq)
+
+
+Roadmap:
+
+- replace the Python file picker with the planned version re-written in C
