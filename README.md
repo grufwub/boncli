@@ -3,7 +3,7 @@
 A user friendly dotfile manager. Providing a wrapper script around existing tools written in go, bundled with a friendly curses-based file picker written in python.
 
 
-To install:
+To install execute the following, though /usr/local/bin can be replaced with any directory in path should you wish:
 
 `curl -fLo /usr/local/bin/boncli 'https://github.com/grufwub/boncli/raw/master/boncli'`
 
