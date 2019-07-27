@@ -18,7 +18,7 @@ The bonclay executable is actually located at: %s
 If you are having any issues please contact grufwub directly at: https://github.com/grufwub/boncli/issues\n
 %s
   config       Open the default configuration file with EDITOR
-  manage       Open the CLI file-picker interface to manage your synced files\n' "$BONCLAY_EXEC" "$($BONCLAY_EXEC --help)"
+  manage       Open the CLI file-picker interface to manage your synced files\n' "$BONCLAY_EXEC" "$($BONCLAY_EXEC --help | sed -e 's|^Usage: bonclay|Usage: boncli|')"
 }
 
 function file_picker()
@@ -224,6 +224,8 @@ function update_boncli()
 			printf '\nboncli updated successfully!\nplease re-run `boncli update` to check for any bonclay / yq binary updates\n'
 			exit 0
 		fi
+	else
+		printf 'boncli script up-to-date!\n'
 	fi
 }
 
@@ -239,20 +241,20 @@ function initial_checks()
 	if [[ ! -d $BONCLI_ROOT ]] ; then
 		printf 'boncli root directory does not exist, creating: %s\n' "$BONCLI_ROOT"
 		mkdir -p "$BONCLI_ROOT"
+		if [[ $? -ne 0 ]] ; then printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BONCLI_ROOT" ; fi
 	fi
 
 	# ensure that boncli bins directory exists
 	if [[ ! -d $BINS_DIR ]] ; then
 		mkdir -p "$BINS_DIR"
+		if [[ $? -ne 0 ]] ; then printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BINS_DIR" ; fi
 	fi
 
 	# ensure that boncli sync directory exists
 	if [[ ! -d $SYNC_DIR ]] ; then
 		mkdir -p "$SYNC_DIR"
+		if [[ $? -ne 0 ]] ; then printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$SYNC_DIR" ; fi
 	fi
-
-	# check boncli directory permissions
-	printf 'TODO: check file permissions\n'
 
 	# check that curl installed
 	if ! (curl --version > /dev/null 2>&1) ; then
@@ -301,15 +303,9 @@ function main()
 
 	# Handle arguments
 	case "$1" in
-		'init'|'--version')
+		'init')
 			# Launch bonclay without automatically included conf file
 			"$BONCLAY_EXEC" $@
-			exit $?
-			;;
-
-		'--help'|'')
-			# Display bonclay help information with our own wrapper-specific information
-			usage
 			exit $?
 			;;
 
@@ -335,13 +331,16 @@ function main()
 			update_boncli
 			update_binaries
 			;;
-		'version')
+		'--version')
 			printf 'boncli version %s\n' "$BONCLI_VERSION"
+			"$BONCLAY_EXEC" --version
+			"$YQ_EXEC" --version
 			exit 0
 			;;
-		*)
-			# All else shouldn't be accepted commands, just pass to bonclay as-is
-			"$BONCLAY_EXEC" $@
+
+		'--help'|*)
+			# display usage information
+			usage
 			exit $?
 			;;
 	esac
