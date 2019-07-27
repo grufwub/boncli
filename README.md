@@ -1,4 +1,7 @@
-# boncli
+# boncli BETA
+
+*please note this is still in beta and needs to be tested. please only use this on non-production systems and ensuring that you have backups!*
+
 
 A user friendly dotfile manager designed for Pengwin WSL (https://github.com/whitewaterfoundry/Pengwin) users, but usable on any 64-bit Linux / MacOS systems. Providing a wrapper script around existing tools written in go, bundled with a friendly curses-based file picker written in python.
 
