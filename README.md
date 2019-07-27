@@ -30,4 +30,6 @@ Roadmap:
 
 Troubleshooting:
 
-- if you use pyenv to manage your python installations, you might run into a '_curses' module not found error. if this is the case, then you need to install the ncurses developer package for you distribution, uninstall that version of python3 through pyenv, then reinstall it so that it can build python3 with the appropriate ncurses modules. if this still doesn't work, then installing python3 through your distribution's package management system should fix it
+- to ChromeOS users: you will need to change the default `BONCLI_ROOT` to an executable part of your filesystem, as by default the user home directory does not have executable permissions. a good alternative is `BONCLI_ROOT=/usr/local/.boncli`
+
+- if you use pyenv to manage your python installations, you might run into a `_curses` module not found error. if this is the case, then you need to install the ncurses developer package for you distribution, uninstall that version of python3 through pyenv, then reinstall it so that it can build python3 with the appropriate ncurses modules. if this still doesn't work, then installing python3 through your distribution's package management system should fix it
