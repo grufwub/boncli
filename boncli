@@ -206,7 +206,7 @@ function update_boncli()
 	local boncli_remote
 
 	# compare local boncli version to remote, execute update script if version difference
-	boncli_remote=$(curl -fL "$GIT_URL/raw/master/boncli" > /dev/null 2>&1)
+	boncli_remote=$(curl -fL "$GIT_URL/raw/master/boncli" --silent)
 	if [[ $? -ne 0 ]] ; then
 		printf 'error reading boncli version from repository!\n'
 		exit 1
