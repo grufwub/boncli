@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=2
+readonly BONCLI_VERSION=3
 readonly GIT_URL='https://github.com/grufwub/boncli'
 
 # Global variables (set in function setup_env)
@@ -18,7 +18,8 @@ The bonclay executable is actually located at: %s
 If you are having any issues please contact grufwub directly at: https://github.com/grufwub/boncli/issues\n
 %s
   config       Open the default configuration file with EDITOR
-  manage       Open the CLI file-picker interface to manage your synced files\n' "$BONCLAY_EXEC" "$($BONCLAY_EXEC --help | sed -e 's|^Usage: bonclay|Usage: boncli|')"
+  manage       Open the CLI file-picker interface to manage your synced files
+  update       Check for updates to the boncli script, bonclay and yq binaries\n' "$BONCLAY_EXEC" "$($BONCLAY_EXEC --help | sed -e 's|^Usage: bonclay|Usage: boncli|')"
 }
 
 function file_picker()
