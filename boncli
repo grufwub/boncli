@@ -2,6 +2,7 @@
 
 readonly BONCLI_VERSION=5
 readonly GIT_URL='https://github.com/grufwub/boncli'
+readonly GIT_BRANCH='development'
 
 # Global variables (set in function setup_env)
 declare BONCLI_ROOT
@@ -162,7 +163,7 @@ function get_latest_yq()
 function get_latest_file_picker()
 {
 	printf 'downloading latest curses file-picker...\n'
-	download "$FILE_PICKER" "$GIT_URL/raw/master/scripts/file_picker.py"
+	download "$FILE_PICKER" "$GIT_URL/raw/$GIT_BRANCH/scripts/file_picker.py"
 }
 
 function update_binaries()
@@ -195,7 +196,7 @@ function update_boncli()
 	local boncli_remote
 
 	# compare local boncli version to remote, execute update script if version difference
-	boncli_remote=$(curl -fL "$GIT_URL/raw/master/boncli" --silent)
+	boncli_remote=$(curl -fL "$GIT_URL/raw/$GIT_BRANCH/boncli" --silent)
 	if [[ $? -ne 0 ]] ; then
 		printf 'error reading boncli version from repository!\n'
 		exit 1
@@ -204,7 +205,7 @@ function update_boncli()
 	boncli_remote=$(printf "$boncli_remote" | grep -e '^readonly BONCLI_VERSION=' | sed 's|^readonly BONCLI_VERSION=||')
 	if [[ $boncli_remote -gt $BONCLI_VERSION ]] ; then
 		printf 'boncli update found! downloading and executing update script...'
-		curl -fL "$GIT_URL/raw/master/scripts/update.sh" --silent | bash
+		curl -fL "$GIT_URL/raw/$GIT_BRANCH/scripts/update.sh" --silent | bash
 
 		if [[ $? -ne 0 ]] ; then
 			printf 'error downloading boncli update script!\n'
