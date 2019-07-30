@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=5
+readonly BONCLI_VERSION=6
 readonly GIT_URL='https://github.com/grufwub/boncli'
 readonly GIT_BRANCH='development'
 
