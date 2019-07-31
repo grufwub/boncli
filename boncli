@@ -2,7 +2,7 @@
 
 readonly BONCLI_VERSION=7
 readonly GIT_URL='https://github.com/grufwub/boncli'
-readonly GIT_BRANCH='development'
+readonly GIT_BRANCH='master'
 
 # Global variables (set in function setup_env)
 declare BONCLI_ROOT
