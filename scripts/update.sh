@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_BRANCH='master'
+readonly BONCLI_BRANCH='git-sync'
 readonly BONCLI_URL="https://github.com/grufwub/boncli/raw/$BONCLI_BRANCH/boncli"
 
 printf 'updater script:\n'

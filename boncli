@@ -2,7 +2,7 @@
 
 readonly BONCLI_VERSION=9
 readonly GIT_URL='https://github.com/grufwub/boncli'
-readonly GIT_BRANCH='master'
+readonly GIT_BRANCH='git-sync'
 
 # Global variables (set in function setup_env)
 declare BONCLI_ROOT
@@ -10,6 +10,7 @@ declare SYNC_ROOT
 declare YQ_EXEC
 declare BONCLAY_EXEC
 declare FILE_PICKER
+declare BONCLI_GIT
 declare CONF_FILE
 
 function usage()
@@ -67,6 +68,7 @@ function setup_env()
 	BONCLAY_EXEC="$BINS_DIR/bonclay"
 	CONF_FILE="$SYNC_DIR/bonclay.conf.yaml"
 	FILE_PICKER="$BINS_DIR/file_picker.py"
+	BONCLI_GIT="$BINS_DIR/boncli_git"
 }
 
 function download()
@@ -318,6 +320,12 @@ function main()
 			exit $?
 			;;
 
+		'git')
+			shift 1
+			"$BONCLI_GIT" $@
+			exit $?
+			;;
+
 		'update')
 			update_boncli
 			update_binaries
@@ -339,5 +347,5 @@ function main()
 
 setup_env
 initial_checks
-main "$@"
+main $@
 exit 0

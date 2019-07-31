@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function usage()
+{
+	printf 'boncli git usage!\n'
+}
+
+function main()
+{
+	case "$1" in
+		*)
+			usage
+			exit 0
+			;;
+}
+
+main $@
