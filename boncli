@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=8
+readonly BONCLI_VERSION=9
 readonly GIT_URL='https://github.com/grufwub/boncli'
 readonly GIT_BRANCH='master'
 
@@ -56,7 +56,7 @@ function file_picker()
 
 function setup_env()
 {
-	if [ -z $BONCLI_ROOT ] ; then
+	if [ -z "$BONCLI_ROOT" ] ; then
 		# Bonclay directory not set, using default
 		BONCLI_ROOT="$HOME/.boncli"
 	fi
@@ -229,20 +229,20 @@ function initial_checks()
 	fi
 
 	# ensure that boncli directory exists
-	if [[ ! -d $BONCLI_ROOT ]] ; then
+	if [[ ! -d "$BONCLI_ROOT" ]] ; then
 		printf 'boncli root directory does not exist, creating: %s\n' "$BONCLI_ROOT"
 		mkdir -p "$BONCLI_ROOT"
 		if [[ $? -ne 0 ]] ; then printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BONCLI_ROOT" ; fi
 	fi
 
 	# ensure that boncli bins directory exists
-	if [[ ! -d $BINS_DIR ]] ; then
+	if [[ ! -d "$BINS_DIR" ]] ; then
 		mkdir -p "$BINS_DIR"
 		if [[ $? -ne 0 ]] ; then printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BINS_DIR" ; fi
 	fi
 
 	# ensure that boncli sync directory exists
-	if [[ ! -d $SYNC_DIR ]] ; then
+	if [[ ! -d "$SYNC_DIR" ]] ; then
 		mkdir -p "$SYNC_DIR"
 		if [[ $? -ne 0 ]] ; then printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$SYNC_DIR" ; fi
 	fi
@@ -278,7 +278,7 @@ function initial_checks()
 	fi
 
 	# initialize configuration file if not already
-	if [[ ! -f $CONF_FILE ]] ; then
+	if [[ ! -f "$CONF_FILE" ]] ; then
 		cd "$SYNC_DIR"
 		"$BONCLAY_EXEC" init
 		cd - > /dev/null 2>&1
