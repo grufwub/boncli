@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly BONCLI_BRANCH='master'
-readonly BONCLI_URL='https://github.com/grufwub/boncli/raw/$BONCLI_BRANCH/boncli'
+readonly BONCLI_URL="https://github.com/grufwub/boncli/raw/$BONCLI_BRANCH/boncli"
 
 printf 'updating boncli!\n'
 
