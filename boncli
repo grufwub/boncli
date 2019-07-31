@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=6
+readonly BONCLI_VERSION=7
 readonly GIT_URL='https://github.com/grufwub/boncli'
 readonly GIT_BRANCH='development'
 
@@ -274,7 +274,7 @@ function initial_checks()
 	# check user has file picker script installed
 	if [[ ! -f "$FILE_PICKER" ]] ; then
 		get_latest_file_picker
-		#if [ $? -ne 0 ] ; then exit 1 ; fi
+		if [ $? -ne 0 ] ; then exit 1 ; fi
 	fi
 
 	# initialize configuration file if not already
