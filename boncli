@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly BONCLI_VERSION=7
+readonly BONCLI_VERSION=8
 readonly GIT_URL='https://github.com/grufwub/boncli'
 readonly GIT_BRANCH='master'
 
@@ -205,7 +205,7 @@ function update_boncli()
 
 	boncli_remote=$(printf "$boncli_remote" | grep -e '^readonly BONCLI_VERSION=' | sed 's|^readonly BONCLI_VERSION=||')
 	if [[ $boncli_remote -gt $BONCLI_VERSION ]] ; then
-		printf 'boncli update found! downloading and executing update script...'
+		printf 'boncli update found! downloading and executing update script...\n'
 		curl -fL "$GIT_URL/raw/$GIT_BRANCH/scripts/update.sh" --silent | bash
 
 		if [[ $? -ne 0 ]] ; then
