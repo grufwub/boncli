@@ -7,7 +7,7 @@ readonly GIT_BRANCH='git-sync'
 # Global variables (set in function setup_env)
 declare BONCLI_ROOT
 declare SYNC_ROOT
-declare YQ_EXEC
+declare wYQ_EXEC
 declare BONCLAY_EXEC
 declare FILE_PICKER
 declare BONCLI_GIT
@@ -222,6 +222,29 @@ function update_boncli()
 	fi
 }
 
+function git_check()
+{
+	local enabled
+
+	enabled=$("$YQ_EXEC" r "$CONF_FILE" 'git.enabled')
+	if [[ $enabled == 'null' ]] || [[ $enabled == 'false' ]] ; then
+		# ensure that git option is part of configuration file
+		printf '%s\n' "$($YQ_EXEC w $CONF_FILE git.enabled false)" > "$CONF_FILE"
+		# inform user that git sync is disabled, then exit
+		printf 'boncli git synchronization is disabled!\n'
+		return 1
+	elif [[ $enabled != 'true' ]] ; then
+		printf "invalid tag \'%s\' for git.enabled in configuration file, setting to false" "$enabled"
+		printf '%s\n' "$($YQ_EXEC w $CONF_FILE git.enabled false)" > "$CONF_FILE"
+		return 1
+	fi
+
+	if ! (git --version > /dev/null 2>&1) ; then
+		printf 'boncli git synchronization requires that git be installed, exiting...\n'
+		return 1
+	fi
+}
+
 function initial_checks()
 {
 	# check running as bash
@@ -289,6 +312,8 @@ function initial_checks()
 
 function main()
 {
+	local result
+
 	# User has supplied their own conf file, run bonclay as if without wrapper
 	if [[ "$2" == *".yaml.conf"* ]] ; then
 		"$BONCLAY_EXEC" $@
@@ -299,53 +324,61 @@ function main()
 		'init')
 			# Launch bonclay without automatically included conf file
 			"$BONCLAY_EXEC" $@
-			exit $?
+			result=$?
 			;;
 
 		'backup'|'restore'|'sync')
 			# Execute bonclay with supplied command and automatically include config file
 			"$BONCLAY_EXEC" "$1" "$CONF_FILE"
-			exit $?
+			result=$?
 			;;
 
 		'config')
 			# Provide short-cut to let user modify config file with their environmnetally set EDITOR
 			"$EDITOR" "$CONF_FILE"
-			exit $?
+			result=$?
 			;;
 
 		'manage')
 			# Launch the user-friendly Python3 filechecker to select / deselect synchronized files
 			file_picker
-			exit $?
+			result=$?
 			;;
 
 		'git')
+			# Perform initial git checks
+			if !(git_check) ; then
+				result=0
+				break
+			fi
+			# Launch boncli_git script to handle git synchronization -- pass SYNC_DIR + all other arguments (except git)
 			shift 1
-			"$BONCLI_GIT" $@
-			exit $?
+			"$BONCLI_GIT" "$SYNC_DIR" $@
+			result=$?
 			;;
 
 		'update')
 			update_boncli
 			update_binaries
 			;;
+
 		'--version')
 			printf 'boncli version %s\n' "$BONCLI_VERSION"
 			"$BONCLAY_EXEC" --version
 			"$YQ_EXEC" --version
-			exit 0
+			result=0
 			;;
 
 		'--help'|*)
 			# display usage information
 			usage
-			exit $?
+			result=$?
 			;;
 	esac
+
+	exit $result
 }
 
 setup_env
 initial_checks
 main $@
-exit 0
