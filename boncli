@@ -296,25 +296,34 @@ initial_checks() {
   if [ ! -d "$BONCLI_ROOT" ]; then
     printf 'boncli root directory does not exist, creating: %s\n' "$BONCLI_ROOT"
     mkdir -p "$BONCLI_ROOT"
-    [ $? -ne 0 ] && printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BONCLI_ROOT"
+    if [ $? -ne 0 ]; then
+      printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BONCLI_ROOT"
+      return 1
+    fi
   fi
 
   # ensure that boncli bins directory exists
   if [ ! -d "$BINS_DIR" ]; then
     mkdir -p "$BINS_DIR"
-    [ $? -ne 0 ] && printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BINS_DIR"
+    if [ $? -ne 0 ]; then
+      printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BINS_DIR"
+      return 1
+    fi
   fi
 
   # ensure that boncli sync directory exists
   if [ ! -d "$SYNC_DIR" ]; then
     mkdir -p "$SYNC_DIR"
-    [ $? -ne 0 ] && printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$SYNC_DIR"
+    if [ $? -ne 0 ]; then
+      printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$SYNC_DIR"
+      return 1
+    fi
   fi
 
   # ensure that boncli temp directory exists
   if [ ! -d "$BONCLI_TEMP" ]; then
     mkdir -p "$BONCLI_TEMP"
-    [ $? -ne 0 ] && printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BONCLI_TEMP"
+    [ $? -ne 0 ] && ( printf 'unable to create '%s'!\nplease check BONCLI_ROOT file permissions and try launching boncli again\n' "$BONCLI_TEMP"; return 1 )
   fi
 
   # check that curl installed
@@ -336,7 +345,7 @@ initial_checks() {
   # ensure user has python3 installed
   if ( ! python3 --version > /dev/null 2>&1 ); then
     printf 'boncli requires that python3 be installed for the curses file-picker, exiting...\n'
-    exit 1
+    return 1
   fi
 
   # check user has file picker script installed
@@ -388,7 +397,7 @@ main() {
 
     'update')
       # Attempt to update boncli, if up-to-date then update binaries, else return 0 if updated or 1 if failed
-      update_boncli || ( ( [ $? -eq 2 ] && return 0  ) || return 1 )
+      update_boncli || ( [ $? -eq 2 ] && return 0  ) || return 1
       update_binaries
       result=$?
       ;;
@@ -423,5 +432,4 @@ result=$?
 
 cleanup
 
-printf '\nexit code: %i\n' "$result"
 exit $result

@@ -44,7 +44,7 @@ check_env()
 
 gitcmd()
 {
-  git -c "user.name=$GIT_NAME" -c "user.email=$GIT_EMAIL" "$@" > /dev/null 2>&1
+  GIT_SSH_COMMAND=$GIT_SSH git -c "user.name=$GIT_NAME" -c "user.email=$GIT_EMAIL" "$@" > /dev/null 2>&1
 }
 
 git_checkout() {
@@ -88,7 +88,7 @@ setup_git_repo()
 
   # add changes, commit and push - return if fail
   git_add_commit
-  gitcmd push origin 'master' || ( printf 'push to remote git branch "master" failed!\n'; return 1 )
+  gitcmd push origin 'master' || printf 'push to remote git branch "master" failed!\n'; return 1
 
   # switch back to user sync repository
   git_checkout "$GIT_BRANCH"
@@ -129,7 +129,7 @@ handle_merge_conflict()
 
         # Get new branch name
         read further_input
-        check_valid_input "$further_input" || ( printf 'Invalid branch name!\n'; read_user_input )
+        check_valid_input "$further_input" || printf 'Invalid branch name!\n'; read_user_input
 
         # Checkout new branch name and move changes there
         printf "Pushing local changes to new branch $further_input\n"
@@ -138,7 +138,7 @@ handle_merge_conflict()
         git_checkout "$further_input"
         gitcmd stash pop
         git_add_commit
-        gitcmd push origin "$further_input" || ( printf 'push to remote git branch "%s" failed!\n' "$1"; return 1 )
+        gitcmd push origin "$further_input" || printf 'push to remote git branch "%s" failed!\n' "$1"; return 1
 
         # Switch back to original branch and pull remote changes
         printf 'Fast-forwarding to latest remote changes!\n'
@@ -150,7 +150,7 @@ handle_merge_conflict()
       3)
         printf 'Force pushing local changes and ignoring remote changes!\n'
         git_add_commit
-        gitcmd push origin "$GIT_BRANCH" --force || ( printf 'push to remote git branch "%s" failed!\n' "$1"; return 1 )
+        gitcmd push origin "$GIT_BRANCH" --force || printf 'push to remote git branch "%s" failed!\n' "$1"; return 1
         return 0
         ;;
 
@@ -174,15 +174,17 @@ handle_merge_conflict()
   read_user_input || return 1
 }
 
-check_ssh_key()
-{
-
-}
-
 setup_git_variables()
 {
+  local ssh_key
+
   GIT_REPO=$(read_yaml_conf 'git.repo')
-  [ "$GIT_REPO" = '' ] && ( printf 'boncli git sync repository not set!\n'; return 1 )
+  if [ "$GIT_REPO" = '' ]; then printf 'boncli git sync repository not set!\n'; return 1; fi
+
+  ssh_key=$(read_yaml_conf 'git.ssh_key')
+  if [ "$ssh_key" = '' ]; then printf 'boncli git ssh key not set!\n'; return 1; fi
+  if [ ! -f "$ssh_key" ]; then printf 'boncli git ssh key not found!\n'; return 1; fi
+  GIT_SSH="ssh -i "$ssh_key" -F /dev/null"
 
   GIT_BRANCH=$(read_yaml_conf 'git.branch')
   [ "$GIT_BRANCH" = '' ] && GIT_BRANCH=$DEFAULT_GITBRANCH
@@ -191,25 +193,23 @@ setup_git_variables()
   [ "$GIT_NAME" = '' ] && GIT_NAME=$DEFAULT_GITNAME
 
   GIT_EMAIL=$(read_yaml_conf 'git.client_email')
-  [ "$GIT_EMAIL" = '' ] && GIT_EMAIL=$DEFAULT_GITEMAIL
+  [ "$GIT_EMAIL" = '' ] && GIT_EMAIL=$DEFAULT_GITEMAIL  
 
-  return 0
+  return 1
 }
 
 git_sync()
 {
   local merge_str
 
-  # check ssh key exists (and is valid?)
-  check_ssh_key || return 1
-
   # ensure all required variables set (either from config file or default values)
   setup_git_variables || return 1
+  printf "return value: $?\n"
 
   # ensure sync directory is initialized as git repo, setup if not
   if ( ! git status ); then
     printf 'boncli sync directory not setup for git, initializing!\n'
-    setup_git_repo || ( printf 'boncli git init failed\n'; return 1 )
+    if ( ! setup_git_repo ); then printf 'boncli git init failed\n'; return 1; fi
   fi
 
   # ensure we're in sync directory
@@ -219,7 +219,10 @@ git_sync()
   git_checkout
 
   # fetch latest changes - return if fail
-  git fetch origin || ( printf 'boncli git fetch failed!\n'; return 1 )
+  if ( ! gitcmd fetch origin ); then
+    printf 'boncli git fetch failed!\n'
+    return 1
+  fi
 
   # check if changes and handle
   if ( git status | grep -e '^Your branch is behind.*and can be fast-forwarded' > /dev/null 2>&1 ); then
@@ -233,7 +236,10 @@ git_sync()
 
   # add all changes, commit and push - return if fail
   git_add_commit
-  gitcmd push origin "$GIT_BRANCH" || ( printf 'push to remote git branch "%s" failed!\n' "$GIT_BRANCH"; return 1 )
+  if ( ! gitcmd push origin "$GIT_BRANCH" ); then
+    printf 'push to remote git branch "%s" failed!\n' "$GIT_BRANCH"
+    return 1
+  fi
 
   return 0
 }
