@@ -1,30 +1,48 @@
-#!/bin/bash
+#!/bin/sh
 
-readonly BONCLI_BRANCH='git-sync'
-readonly BONCLI_URL="https://github.com/grufwub/boncli/raw/$BONCLI_BRANCH/boncli"
+check_env() {
+  [ -z "$BONCLI_ROOT" ] && return 1
+  [ -z "$FILE_PICKER" ] && return 1
+  [ -z "$BONCLI_GIT" ] && return 1
+  TEMP_DIR=$(get_temp_dir) || return 1
+}
+
+download_files() {
+  TEMP_BONCLI=""
+  TEMP_FILEPICKER=""
+  TEMP_BONCLIGIT=""
+
+  download "$TEMP_DIR/boncli" "$TEMP_BONCLI"             || return 1
+  download "$TEMP_DIR/file_picker.py" "$TEMP_FILEPICKER" || return 1
+  download "$TEMP_DIR/boncli_git.sh" "$TEMP_BONCLIGIT"   || return 1
+}
+
+replace_files() {
+  local boncli_path
+
+  [ ! -f "$TEMP_DIR/boncli" ]         && return 1
+  [ ! -f "$TEMP_DIR/file_picker.py" ] && return 1
+  [ ! -f "$TEMP_DIR/boncli_git.sh" ]  && return 1
+
+  boncli_path=$(which boncli)
+  if [ ! -w "$BONCLI_PATH" ]; then
+    # Path not writeable, try sudo, return if fail
+    sudo -E mv "$TEMP_BONCLI" "$boncli_path" > /dev/null 2>&1 || return 1
+  else
+    mv "$TEMP_BONCLI" "$boncli_path" > /dev/null 2>&1         || return 1
+  fi
+
+  mv "$TEMP_FILEPICKER" "$FILE_PICKER" > /dev//null 2>&1 || return 1
+  mv "$TEMP_BONCLIGIT" "$BONCLI_GIT" > /dev/null 2>&1    || return 1
+}
 
 printf 'updater script:\n'
 
-BONCLI_PATH=$(which boncli)
-if [[ $BONCLI_PATH == '' ]] ; then
-	printf '\nexisting boncli not found, exiting...\n'
-	exit 1
+if ( ! check_env ); then
+  printf 'environment check failed...\n'
+  return 1
 fi
 
-printf 'downloading...'
-download="curl -fLo $BONCLI_PATH $BONCLI_URL --silent"
-if [[ -w $BONCLI_PATH ]] ; then
-	# path is writeable, sudo not required
-	$download
-else
-	# write permissions for current user not available, trying sudo
-	sudo $download
-fi
-
-if [[ $? -ne 0 ]] ; then
-	printf ' download failed -- boncli failed to update!\n'
-	exit 1
-else
-	printf ' boncli updated successfully!\n'
-	exit 0
-fi
+download_files || return 1
+replace_files  || return 1
+return 0

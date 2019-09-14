@@ -66,20 +66,29 @@ get_temp_file() {
   # generate file string, touch file, set temp dir used, echo string
   alphanum_str=$(random_string 8)
   file_str="$BONCLI_TEMP/file.$alphanum_str"
-  touch "$file_str"
-  TEMP_USED=1
 
+  if ( ! touch "$file_str" ); then
+    printf 'failed to make temporary file, are BONCLI_ROOT permissions correct?\n'
+    return 1
+  fi
+
+  TEMP_USED=1
   printf "$file_str\n"
 }
 
-get_temp_dir_str() {
+get_temp_dir() {
   local alphanum_str dir_str
 
   # generate file string, touch file, set temp dir used, echo string
   alphanum_str=$(random_string 8)
   dir_str="$BONCLI_TEMP/dir.$alphanum_str"
-  TEMP_USED=1
 
+  if ( ! mkdir -p "$dir_str" > /dev/null 2>&1 ); then
+    printf 'failed to make temporary directory, are BONCLI_ROOT permissions correct?\n'
+    return 1
+  fi
+
+  TEMP_USED=1
   printf "$dir_str\n"
 }
 
@@ -154,10 +163,8 @@ get_latest_bonclay() {
   release=$(get_latest_release 'talal/bonclay' | sed -e 's|^v||')
   url="https://github.com/talal/bonclay/releases/download/v$release"
 
-  tmpdir=$(get_temp_dir_str)
-  mkdir "$tmpdir"
-
-  cd "$tmpdir"
+  tmpdir=$(get_temp_dir) || return 1
+  cd "$tmpdir" > /dev/null 2>&1
 
   printf 'downloading latest bonclay (%s)...\n' "v$release"
   case "$(uname -sm)" in
@@ -194,10 +201,8 @@ get_latest_yq() {
   release=$(get_latest_release 'mikefarah/yq')
   url="https://github.com/mikefarah/yq/releases/download/$release"
 
-  tmpdir=$(get_temp_dir_str)
-  mkdir "$tmpdir"
-
-  cd "$tmpdir"
+  tmpdir=$(get_temp_dir) || return 1
+  cd "$tmpdir" > /dev/null 2>&1
 
   printf 'downloading latest yq (%s)...\n' "$release"
   case "$(uname -sm)" in
