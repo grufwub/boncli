@@ -51,11 +51,12 @@ replace_files() {
 
 printf 'updater script:\n'
 
-if ( ! check_update_env ); then
-  printf 'environment check failed...\n'
-  return 1
-fi
+#if ( ! check_update_env ); then
+#  printf 'environment check failed...\n'
+#  return 1
+#fi
 
+check_update_env
 download_files || return 1
 replace_files  || return 1
 return 0
