@@ -1,12 +1,20 @@
 #!/bin/sh
 
 check_update_env() {
+  printf "variables:
+BONCLI_ROOT=$BONCLI_ROOT
+FILE_PICKER=$FILE_PICKER
+BONCLI_GIT=$BONCLI_GIT
+BONCLI_GITURL=$BONCLI_GITURL
+BONCLI_GITBRANCH=$BONCLI_GITBRANCH\n"
+
   [ -z "$BONCLI_ROOT" ]      && return 1
   [ -z "$FILE_PICKER" ]      && return 1
   [ -z "$BONCLI_GIT" ]       && return 1
   [ -z "$BONCLI_GITURL" ]    && return 1
   [ -z "$BONCLI_GITBRANCH" ] && return 1
   TEMP_DIR=$(get_temp_dir)   || return 1
+
   printf "TEMP_DIR=$TEMP_DIR\n"; return 1
 }
 
