@@ -141,7 +141,7 @@ download() {
   local result
 
   # download!
-  curl -fLo "$1" "$2" > /dev/null 2>&1
+  curl -fL "$1" --silent > "$2"
   result=$?
 
   # if failed, print message
@@ -287,7 +287,7 @@ update_boncli() {
   boncli_remote=$(printf "$boncli_remote" | grep -e '^readonly BONCLI_VERSION=' | sed 's|^readonly BONCLI_VERSION=||')
   if [ "$boncli_remote" -gt "$BONCLI_VERSION" ]; then
     printf 'boncli update found! downloading and executing update script...\n'
-    curl -fL "$BONCLI_GITURL/raw/$BONCLI_GITBRANCH/scripts/update.sh" --silent | sh
+    download "$temp_file" "$BONCLI_GITURL/raw/$BONCLI_GITBRANCH/scripts/update.sh"
 
     if [ $? -ne 0 ]; then
       printf 'error downloading boncli update script!\n'
