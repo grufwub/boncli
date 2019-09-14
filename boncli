@@ -275,7 +275,7 @@ update_binaries() {
 }
 
 update_boncli() {
-  local boncli_remote
+  local boncli_remote temp_file
 
   # compare local boncli version to remote, execute update script if version difference
   boncli_remote=$(curl -fL "$BONCLI_GITURL/raw/$BONCLI_GITBRANCH/boncli" --silent)
@@ -287,7 +287,9 @@ update_boncli() {
   boncli_remote=$(printf "$boncli_remote" | grep -e '^readonly BONCLI_VERSION=' | sed 's|^readonly BONCLI_VERSION=||')
   if [ "$boncli_remote" -gt "$BONCLI_VERSION" ]; then
     printf 'boncli update found! downloading and executing update script...\n'
-    download "$temp_file" "$BONCLI_GITURL/raw/$BONCLI_GITBRANCH/scripts/update.sh"
+
+    temp_file=$(get_temp_file) || return 1
+    download  "$temp_file" "$BONCLI_GITURL/raw/$BONCLI_GITBRANCH/scripts/update.sh"
 
     if [ $? -ne 0 ]; then
       printf 'error downloading boncli update script!\n'
