@@ -1,6 +1,6 @@
 #!/bin/sh
 
-check_env() {
+check_update_env() {
   [ -z "$BONCLI_ROOT" ]      && return 1
   [ -z "$FILE_PICKER" ]      && return 1
   [ -z "$BONCLI_GIT" ]       && return 1
@@ -43,7 +43,7 @@ replace_files() {
 
 printf 'updater script:\n'
 
-if ( ! check_env ); then
+if ( ! check_update_env ); then
   printf 'environment check failed...\n'
   return 1
 fi
