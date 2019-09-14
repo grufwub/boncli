@@ -25,8 +25,13 @@ download_files() {
   TEMP_FILEPICKER="$TEMP_DIR/file_picker.py"
   TEMP_BONCLIGIT="$TEMP_DIR/boncli_git.sh"
 
+  printf 'downloading latest boncli script...\n'
   download "$TEMP_BONCLI"     "$url/boncli"                 || return 1
+
+  printf 'downloading latest file_picker.py script...\n'
   download "$TEMP_FILEPICKER" "$url/scripts/file_picker.py" || return 1
+
+  printf 'downloading latest boncli_git.sh script...\n'
   download "$TEMP_BONCLIGIT"  "$url/scripts/boncli_git.sh"  || return 1
 }
 
