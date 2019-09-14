@@ -233,6 +233,12 @@ get_latest_file_picker() {
   return $?
 }
 
+get_latest_boncli_git() {
+  printf 'downloading latest bonclay_git.sh script...\n'
+  download "$BONCLI_GIT" "$BONCLI_GITURL/raw/$BONCLI_GITBRANCH/scripts/boncli_git.sh"
+  return $?
+}
+
 update_binaries() {
   local yq_local yq_remote bonclay_local bonclay_remote
 
@@ -353,6 +359,11 @@ initial_checks() {
     get_latest_file_picker || return 1
   fi
 
+  # check user has boncli_git.sh script installed
+  if [ ! -f "$BONCLI_GIT" ]; then
+    get_latest_boncli_git || return 1
+  fi
+
   # initialize configuration file if not already
   if [ ! -f "$CONF_FILE" ]; then
     cd "$SYNC_DIR" > /dev/null 2>&1
@@ -397,7 +408,13 @@ main() {
 
     'update')
       # Attempt to update boncli, if up-to-date then update binaries, else return 0 if updated or 1 if failed
-      update_boncli || ( [ $? -eq 2 ] && return 0  ) || return 1
+      update_boncli; result=$?
+      if [ $result -eq 2 ]; then
+        return 0
+      elif [ $result -eq 1 ]; then
+        return 1
+      fi
+
       update_binaries
       result=$?
       ;;
