@@ -7,6 +7,7 @@ check_env() {
   [ -z "$BONCLI_GITURL" ]    && return 1
   [ -z "$BONCLI_GITBRANCH" ] && return 1
   TEMP_DIR=$(get_temp_dir)   || return 1
+  printf "TEMP_DIR=$TEMP_DIR\n"; return 1
 }
 
 download_files() {
