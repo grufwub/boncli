@@ -59,7 +59,7 @@ git_add_commit()
 
 check_valid_input()
 {
-  printf 'test.branch' | grep -E -v -e '\s' -e '^\.' -e '\.{2,}' -e '\/$' -e '\.lock$' -e '\\' > /dev/null 2>&1
+  printf "$1" | grep -E -v -e '\s' -e '^\.' -e '\.{2,}' -e '\/$' -e '\.lock$' -e '\\' > /dev/null 2>&1
 }
 
 setup_git_repo()
@@ -255,18 +255,21 @@ main()
       ;;
 
     'client_name')
+      if ( ! check_valid_input "$2" ); then printf 'please provide valid client_name\n'; return 1; fi
       shift 1
       update_yaml_conf 'git.client_name' $*
       result=$?
       ;;
 
     'client_email')
+      if ( ! check_valid_input "$2" ); then printf 'please provide valid client_email\n'; return 1; fi
       shift 1
       update_yaml_conf 'git.client_email' $*
       result=$?
       ;;
 
     'repo')
+      if ( ! check_valid_input "$2" ); then printf 'please provide valid repo\n'; return 1; fi
       shift 1
       update_yaml_conf 'git.repo' $*
       result=$?
