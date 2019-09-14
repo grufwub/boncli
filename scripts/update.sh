@@ -1,21 +1,13 @@
 #!/bin/sh
 
 check_update_env() {
-  printf "variables:
-BONCLI_ROOT=$BONCLI_ROOT
-FILE_PICKER=$FILE_PICKER
-BONCLI_GIT=$BONCLI_GIT
-BONCLI_GITURL=$BONCLI_GITURL
-BONCLI_GITBRANCH=$BONCLI_GITBRANCH\n"
-
   [ -z "$BONCLI_ROOT" ]      && return 1
   [ -z "$FILE_PICKER" ]      && return 1
   [ -z "$BONCLI_GIT" ]       && return 1
   [ -z "$BONCLI_GITURL" ]    && return 1
   [ -z "$BONCLI_GITBRANCH" ] && return 1
   TEMP_DIR=$(get_temp_dir)   || return 1
-
-  printf "TEMP_DIR=$TEMP_DIR\n"
+  return 0
 }
 
 download_files() {
@@ -25,13 +17,15 @@ download_files() {
   TEMP_FILEPICKER="$TEMP_DIR/file_picker.py"
   TEMP_BONCLIGIT="$TEMP_DIR/boncli_git.sh"
 
-  printf 'downloading latest boncli script...\n'
+  printf 'downloading files:\n'
+
+  printf 'latest boncli script...\n'
   download "$TEMP_BONCLI"     "$url/boncli"                 || return 1
 
-  printf 'downloading latest file_picker.py script...\n'
+  printf 'latest file_picker.py script...\n'
   download "$TEMP_FILEPICKER" "$url/scripts/file_picker.py" || return 1
 
-  printf 'downloading latest boncli_git.sh script...\n'
+  printf 'latest boncli_git.sh script...\n'
   download "$TEMP_BONCLIGIT"  "$url/scripts/boncli_git.sh"  || return 1
 }
 
