@@ -290,6 +290,7 @@ update_boncli() {
 
     temp_file=$(get_temp_file) || return 1
     download  "$temp_file" "$BONCLI_GITURL/raw/$BONCLI_GITBRANCH/scripts/update.sh"
+    . "$temp_file"
 
     if [ $? -ne 0 ]; then
       printf 'error downloading boncli update script!\n'
