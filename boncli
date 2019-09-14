@@ -141,7 +141,7 @@ download() {
   local result
 
   # download!
-  curl -fL "$1" --silent > "$2"
+  curl -fL "$2" --silent > "$1"
   result=$?
 
   # if failed, print message
