@@ -7,13 +7,6 @@ check_env() {
   [ -z "$BONCLI_GITURL" ]    && return 1
   [ -z "$BONCLI_GITBRANCH" ] && return 1
   TEMP_DIR=$(get_temp_dir)   || return 1
-
-  printf "variables:
-BONCLI_ROOT=$BONCLI_ROOT
-FILE_PICKER=$FILE_PICKER
-BONCLI_GIT=$BONCLI_GIT
-BONCLI_GITURL=$BONCLI_GITURL
-BONCLI_GITBRANCH=$BONCLI_GITBRANCH\n"
 }
 
 download_files() {
@@ -23,9 +16,9 @@ download_files() {
   TEMP_FILEPICKER="$TEMP_DIR/file_picker.py"
   TEMP_BONCLIGIT="$TEMP_DIR/boncli_git.sh"
 
-  download "$TEMP_BONCLI" "$url/boncli"                     || return 1
+  download "$TEMP_BONCLI"     "$url/boncli"                 || return 1
   download "$TEMP_FILEPICKER" "$url/scripts/file_picker.py" || return 1
-  download "$TEMP_BONCLIGIT" "$url/scripts/boncli_git.sh"   || return 1
+  download "$TEMP_BONCLIGIT"  "$url/scripts/boncli_git.sh"  || return 1
 }
 
 replace_files() {
