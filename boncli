@@ -1,6 +1,6 @@
 #!/bin/sh
 
-readonly BONCLI_VERSION=9
+readonly BONCLI_VERSION=10
 readonly BONCLI_GITURL='https://github.com/grufwub/boncli'
 readonly BONCLI_GITBRANCH='git-sync'
 TEMP_USED=0
