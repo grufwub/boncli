@@ -187,15 +187,30 @@ setup_git_variables()
   GIT_SSH="ssh -i "$ssh_key" -F /dev/null"
 
   GIT_BRANCH=$(read_yaml_conf 'git.branch')
-  [ "$GIT_BRANCH" = '' ] && GIT_BRANCH=$DEFAULT_GITBRANCH
+  if [ "$GIT_BRANCH" = '' ]; then
+    GIT_BRANCH=$DEFAULT_GITBRANCH
+  elif ( ! check_valid_input "$GIT_BRANCH" ); then
+    printf "branch name "$GIT_BRANCH" is invalid\n"
+    return 1
+  fi
 
   GIT_NAME=$(read_yaml_conf 'git.client_name')
-  [ "$GIT_NAME" = '' ] && GIT_NAME=$DEFAULT_GITNAME
+  if [ "$GIT_NAME" = '' ]; then
+    GIT_NAME=$DEFAULT_GITNAME
+  elif ( ! check_valid_input "$GIT_NAME" ); then
+    printf "branch name "$GIT_NAME" is invalid\n"
+    return 1
+  fi
 
   GIT_EMAIL=$(read_yaml_conf 'git.client_email')
-  [ "$GIT_EMAIL" = '' ] && GIT_EMAIL=$DEFAULT_GITEMAIL  
+  if [ "$GIT_EMAIL" = '' ]; then
+    GIT_NAME=$DEFAULT_GITEMAIL
+  elif ( ! check_valid_input "$GIT_EMAIL" ); then
+    printf "branch name "$GIT_EMAIL" is invalid\n"
+    return 1
+  fi
 
-  return 1
+  return 0
 }
 
 git_sync()
