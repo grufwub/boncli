@@ -1,28 +1,31 @@
 #!/bin/sh
 
 check_env() {
-  [ -z "$BONCLI_ROOT" ] && return 1
-  [ -z "$FILE_PICKER" ] && return 1
-  [ -z "$BONCLI_GIT" ] && return 1
-  TEMP_DIR=$(get_temp_dir) || return 1
+  [ -z "$BONCLI_ROOT" ]      && return 1
+  [ -z "$FILE_PICKER" ]      && return 1
+  [ -z "$BONCLI_GIT" ]       && return 1
+  [ -z "$BONCLI_GITBRANCH" ] && return 1
+  TEMP_DIR=$(get_temp_dir)   || return 1
 }
 
 download_files() {
-  TEMP_BONCLI=""
-  TEMP_FILEPICKER=""
-  TEMP_BONCLIGIT=""
+  local url="$BONCLI_GIT/raw/$BONCLI_GITBRANCH"
 
-  download "$TEMP_DIR/boncli" "$TEMP_BONCLI"             || return 1
-  download "$TEMP_DIR/file_picker.py" "$TEMP_FILEPICKER" || return 1
-  download "$TEMP_DIR/boncli_git.sh" "$TEMP_BONCLIGIT"   || return 1
+  TEMP_BONCLI="$TEMP_DIR/boncli"
+  TEMP_FILEPICKER="$TEMP_DIR/file_picker.py"
+  TEMP_BONCLIGIT="$TEMP_DIR/boncli_git.sh"
+
+  download "$TEMP_BONCLI" "$url/boncli"                     || return 1
+  download "$TEMP_FILEPICKER" "$url/scripts/file_picker.py" || return 1
+  download "$TEMP_BONCLIGIT" "$url/scripts/boncli_git.sh"   || return 1
 }
 
 replace_files() {
   local boncli_path
 
-  [ ! -f "$TEMP_DIR/boncli" ]         && return 1
-  [ ! -f "$TEMP_DIR/file_picker.py" ] && return 1
-  [ ! -f "$TEMP_DIR/boncli_git.sh" ]  && return 1
+  [ ! -f "$TEMP_BONCLI" ]     && return 1
+  [ ! -f "$TEMP_FILEPICKER" ] && return 1
+  [ ! -f "$TEMP_BONCLIGIT" ]  && return 1
 
   boncli_path=$(which boncli)
   if [ ! -w "$BONCLI_PATH" ]; then
